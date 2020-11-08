@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}Processing{% endblock %}
+{% block content %}
+{% for service, data in services.items %}
+<div>{{ data.text }} queue: {{ data.service_queue|length }}</div>
+{% endfor %}
+<form method="post">{% csrf_token %}
+    <button type="submit">Process next</button>
+</form>
+{% endblock %}
