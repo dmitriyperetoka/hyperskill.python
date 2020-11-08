@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+{% block title %}{{ page_title }}{% endblock %}
+{% block content %}
+<h2>{{ page_title }}</h2>
+{% for article in object_list %}
+<div>{{ article.author.username }}: {{ article.description }}</div>
+{% endfor %}
+{% endblock %}
