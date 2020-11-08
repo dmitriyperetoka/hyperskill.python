@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}Main page{% endblock %}
+{% block content %}
+<h2>Hyper news</h2>
+<form action="/news/" method="GET">
+    <input name="q" type="text" placeholder="Search news by title">
+    <button type="submit">Search</button>
+</form>
+{% regroup articles|dictsortreversed:"created" by created.date as dates %}
+{% for date in dates %}
+<h4>{{ date.grouper|date:"Y-m-d" }}</h4>
+<ul>
+    {% for article in date.list %}
+    <li><a href="/news/{{ article.link }}/">{{ article.title }}</a></li>
+    {% endfor %}
+</ul>
+{% endfor %}
+<div><a href="/news/create/">Create a new article</a></div>
+{% endblock %}

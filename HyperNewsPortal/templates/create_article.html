@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}New article{% endblock %}
+{% block content %}
+<h2>Create a new article</h2>
+<form action="" method="post">{% csrf_token %}
+    <p>Title:</p>
+    <input name="title">
+    <p>Text:</p>
+​    <textarea name="text"></textarea>
+    <p>(All the fields are obligatory)</p>
+    <button type="submit">Create</button>
+</form>
+<div><a href="/news/">Main page</a></div>
+{% endblock %}
