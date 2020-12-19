@@ -2,7 +2,7 @@ from django.http.response import HttpResponse
 from django.shortcuts import render
 from django.views.generic import TemplateView, View
 
-from .objects import Queue
+from .services import Queue
 
 queue = Queue()
 
@@ -19,7 +19,7 @@ class MenuView(TemplateView):
 
     def get_context_data(self):
         context = super().get_context_data()
-        context['services'] = queue.services
+        context['items'] = queue.sub_queues.items()
         return context
 
 
@@ -39,7 +39,7 @@ class ProcessingView(TemplateView):
 
     def get_context_data(self):
         context = super().get_context_data()
-        context['services'] = queue.services
+        context['sub_queues'] = queue.sub_queues.values()
         return context
 
     def post(self, request):
@@ -56,5 +56,5 @@ class NextView(TemplateView):
 
     def get_context_data(self):
         context = super().get_context_data()
-        context['next_ticket_number'] = queue.served_next_ticket
+        context['next_ticket_number'] = queue.next_ticket_number
         return context
