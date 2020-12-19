@@ -3,16 +3,16 @@ import sqlite3
 
 
 class LuhnAlgorithm:
-    @classmethod
-    def get_reminder(cls, card_number_without_checksum):
+    @staticmethod
+    def get_reminder(card_number_without_checksum):
         digits = [int(q) for q in card_number_without_checksum[::-1]]
 
-        for number, digit in enumerate(digits):
-            if not number % 2:
+        for index, digit in enumerate(digits):
+            if not index % 2:
                 digit *= 2
                 if digit > 9:
                     digit -= 9
-                digits[number] = digit
+                digits[index] = digit
 
         return sum(digits) % 10
 
@@ -43,10 +43,11 @@ class SimpleBankingSystem:
         self.card_issuer_id = card_issuer_id
         self.account_id_length = account_id_length
         self.pin_length = pin_length
+        self.database_file_name = database_file_name
         self.selected_menu_area = None
         self.logged_account = None
-        self.conn = sqlite3.connect(database_file_name)
-        self.cur = self.conn.cursor()
+        self.conn = None
+        self.cur = None
 
     def create_table_if_not_exists(self):
         self.cur.execute(
@@ -71,7 +72,7 @@ class SimpleBankingSystem:
             if self.cur.execute(
                     "SELECT COUNT() FROM card "
                     "WHERE SUBSTR(number, ?, ?) = ?;",
-                    (lookup_start, lookup_length, account_id_number,)
+                    (lookup_start, lookup_length, account_id_number)
             ).fetchone()[0]:
                 account_id_number = ""
                 continue
@@ -82,8 +83,10 @@ class SimpleBankingSystem:
 
     def make_pin(self):
         pin = ""
+
         for _ in range(self.pin_length):
             pin += str(random.randint(0, 9))
+
         return pin
 
     def create_account(self):
@@ -232,6 +235,8 @@ class SimpleBankingSystem:
         print("0. Exit")
 
     def run(self):
+        self.conn = sqlite3.connect(self.database_file_name)
+        self.cur = self.conn.cursor()
         self.create_table_if_not_exists()
 
         while True:
@@ -239,6 +244,8 @@ class SimpleBankingSystem:
             command = input()
 
             if command == "0":
+                self.conn.close()
+                self.conn, self.cur = None, None
                 break
             elif command in self.menu:
                 try:
