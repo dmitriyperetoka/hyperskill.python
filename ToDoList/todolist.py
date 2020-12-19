@@ -8,7 +8,6 @@ from sqlalchemy.orm import sessionmaker
 today = datetime.today().date()
 
 Base = declarative_base()
-
 default_engine_properties = "sqlite:///todo.db?check_same_thread=False"
 
 
@@ -154,8 +153,7 @@ class ToDoList:
                 self.session = None
                 print("\nBye!")
                 break
-
-            if command in self.menu:
+            elif command in self.menu:
                 try:
                     self.menu[command][0].__call__()
                 except ValueError:
