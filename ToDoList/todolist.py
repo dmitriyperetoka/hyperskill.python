@@ -1,15 +1,18 @@
 from datetime import datetime, timedelta
+
 from sqlalchemy import Column, Date, Integer, String, create_engine
 from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.pool import NullPool
 from sqlalchemy.orm import sessionmaker
 
 today = datetime.today().date()
 
-default_engine_properties = "sqlite:///todo.db?check_same_thread=False"
 Base = declarative_base()
 
+default_engine_properties = "sqlite:///todo.db?check_same_thread=False"
 
-class Table(Base):
+
+class Tasks(Base):
     __tablename__ = "task"
     id = Column(Integer, primary_key=True)
     task = Column(String)
@@ -21,8 +24,8 @@ class Table(Base):
 
 class ToDoList:
     def __init__(self, engine_properties=default_engine_properties):
-        self.engine = create_engine(engine_properties)
-        self.session = sessionmaker(bind=self.engine).__call__()
+        self.engine = create_engine(engine_properties, poolclass=NullPool)
+        self.session = None
 
     @staticmethod
     def show_tasks(tasks):
@@ -41,7 +44,7 @@ class ToDoList:
 
     def show_today_tasks(self):
         print("\nToday:")
-        tasks = self.session.query(Table).filter(Table.deadline == today).all()
+        tasks = self.session.query(Tasks).filter(Tasks.deadline == today).all()
         self.show_tasks(tasks)
 
     def show_week_tasks(self):
@@ -50,15 +53,15 @@ class ToDoList:
             the_day = today + timedelta(days=q)
             print(the_day.strftime("%A %d %b:"))
             tasks = self.session.query(
-                Table
+                Tasks
             ).filter(
-                Table.deadline == the_day
+                Tasks.deadline == the_day
             ).all()
             self.show_tasks(tasks)
 
     def show_all_tasks(self):
         print("\nAll tasks:")
-        tasks = self.session.query(Table).order_by(Table.deadline).all()
+        tasks = self.session.query(Tasks).order_by(Tasks.deadline).all()
 
         if tasks:
             self.show_tasks_and_deadlines(tasks)
@@ -69,11 +72,11 @@ class ToDoList:
     def show_missed_tasks(self):
         print("\nMissed tasks:")
         tasks = self.session.query(
-            Table
+            Tasks
         ).filter(
-            Table.deadline < today
+            Tasks.deadline < today
         ).order_by(
-            Table.deadline
+            Tasks.deadline
         ).all()
 
         if tasks:
@@ -96,15 +99,15 @@ class ToDoList:
         else:
             deadline = datetime.strptime(deadline, "%Y-%m-%d").date()
 
-        self.session.add(Table(task=task, deadline=deadline))
+        self.session.add(Tasks(task=task, deadline=deadline))
         self.session.commit()
         print("The task has been added!\n")
 
     def delete_task(self):
         tasks = self.session.query(
-            Table
+            Tasks
         ).order_by(
-            Table.deadline
+            Tasks.deadline
         ).all()
 
         if tasks:
@@ -136,15 +139,19 @@ class ToDoList:
     def show_menu(self):
         for item in self.menu:
             print(f"{item}) {self.menu[item][1]}")
-        print("0) Exit")
+        print("0) Exit\n")
 
     def run(self):
+        self.session = sessionmaker(bind=self.engine).__call__()
         Base.metadata.create_all(bind=self.engine)
+
         while True:
             self.show_menu()
             command = input()
 
             if command == "0":
+                self.session.close()
+                self.session = None
                 print("\nBye!")
                 break
 
