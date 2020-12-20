@@ -1,5 +1,4 @@
 from django.http.response import HttpResponse
-from django.shortcuts import render
 from django.views.generic import TemplateView, View
 
 from .services import Queue
@@ -44,11 +43,7 @@ class ProcessingView(TemplateView):
 
     def post(self, request):
         queue.process()
-        return render(
-            request,
-            self.template_name,
-            self.get_context_data()
-        )
+        return self.get(request)
 
 
 class NextView(TemplateView):
