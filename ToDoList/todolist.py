@@ -33,7 +33,7 @@ class ToDoList:
                 "4": (self.show_missed_tasks, "Missed tasks"),
                 "5": (self.add_task, "Add task"),
                 "6": (self.delete_task, "Delete task"),
-            }
+            },
         }
         self.selected_menu_area = "main"
 
