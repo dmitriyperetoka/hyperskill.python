@@ -5,16 +5,17 @@ import sqlite3
 class LuhnAlgorithm:
     @staticmethod
     def get_reminder(card_number_without_checksum):
-        digits = [int(q) for q in card_number_without_checksum[::-1]]
+        digits_sum = 0
 
-        for index, digit in enumerate(digits):
-            if not index % 2:
-                digit *= 2
-                if digit > 9:
-                    digit -= 9
-                digits[index] = digit
+        for index, element in enumerate(card_number_without_checksum[::-1]):
+            digit = int(element)
 
-        return sum(digits) % 10
+            if digit and not index % 2:
+                digit = (digit * 2) % 9 or 9
+
+            digits_sum += digit
+
+        return digits_sum % 10
 
     @classmethod
     def make_checksum(cls, card_number_without_checksum):
@@ -27,9 +28,7 @@ class LuhnAlgorithm:
 
     @classmethod
     def check_card_number(cls, card_number):
-        return not (
-            (cls.get_reminder(card_number[:-1]) + int(card_number[-1])) % 10
-        )
+        return cls.make_checksum(card_number[:-1]) == card_number[-1]
 
 
 class SimpleBankingSystem:
@@ -59,12 +58,12 @@ class SimpleBankingSystem:
             ");"
         )
 
-    def make_account_id_number(self):
-        account_id_number = ""
+    def make_account_id(self):
+        account_id = ""
 
         while True:
             for _ in range(self.account_id_length):
-                account_id_number += str(random.randint(0, 9))
+                account_id += str(random.randint(0, 9))
 
             lookup_start = len(self.card_issuer_id) + 1
             lookup_length = self.account_id_length
@@ -72,14 +71,21 @@ class SimpleBankingSystem:
             if self.cur.execute(
                     "SELECT COUNT() FROM card "
                     "WHERE SUBSTR(number, ?, ?) = ?;",
-                    (lookup_start, lookup_length, account_id_number)
+                    (lookup_start, lookup_length, account_id)
             ).fetchone()[0]:
-                account_id_number = ""
+                account_id = ""
                 continue
 
             break
 
-        return account_id_number
+        return account_id
+
+    def make_card_number(self):
+        account_id = self.make_account_id()
+        checksum = LuhnAlgorithm.make_checksum(
+            self.card_issuer_id + account_id
+        )
+        return self.card_issuer_id + account_id + checksum
 
     def make_pin(self):
         pin = ""
@@ -90,8 +96,7 @@ class SimpleBankingSystem:
         return pin
 
     def create_account(self):
-        card_number = self.card_issuer_id + self.make_account_id_number()
-        card_number += LuhnAlgorithm.make_checksum(card_number)
+        card_number = self.make_card_number()
         pin = self.make_pin()
         self.cur.execute(
             "INSERT INTO card (number, pin) VALUES (?, ?);",
@@ -232,7 +237,7 @@ class SimpleBankingSystem:
     def show_menu(self):
         for q in self.menu:
             print(f"{q}. {self.menu[q][1]}")
-        print("0. Exit")
+        print("0. Exit\n")
 
     def run(self):
         self.conn = sqlite3.connect(self.database_file_name)
