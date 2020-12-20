@@ -125,20 +125,33 @@ class SimpleBankingSystem:
             f"{pin}\n"
         )
 
+    def validate_card_number_and_pin(self, card_number, pin):
+        return (
+            len(card_number)
+            == len(self.card_issuer_id) + self.account_id_length + 1
+            and len(pin) == self.pin_length
+            and card_number.isdigit()
+            and pin.isdigit()
+            and LuhnAlgorithm.check_card_number(card_number)
+        )
+
     def login_account(self):
         print("Enter your card number:")
         card_number = input()
         print("Enter your PIN:")
         pin = input()
-        account_selection = self.cur.execute(
-            "SELECT number FROM card WHERE number = ? AND pin = ?;",
-            (card_number, pin)
-        ).fetchone()
+        matching_account = None
 
-        if not account_selection:
+        if self.validate_card_number_and_pin(card_number, pin):
+            matching_account = self.cur.execute(
+                "SELECT number FROM card WHERE number = ? AND pin = ?;",
+                (card_number, pin)
+            ).fetchone()
+
+        if not matching_account:
             return print("\nWrong card number or PIN!\n")
 
-        self.logged_account = account_selection[0]
+        self.logged_account = matching_account[0]
         self.selected_menu_area = "account"
         print("\nYou have successfully logged in!\n")
 
@@ -168,22 +181,6 @@ class SimpleBankingSystem:
             print("Not enough money!\n")
             return True
 
-    def check_card_number_warnings(self, destination_card_number):
-        if not LuhnAlgorithm.check_card_number(destination_card_number):
-            print(
-                "Probably you made a mistake in the card number. "
-                "Please try again!\n"
-            )
-            return True
-
-        if not self.cur.execute(
-                "SELECT COUNT() FROM card "
-                "WHERE number = ?;",
-                (destination_card_number,)
-        ).fetchone()[0]:
-            print("\nSuch a card does not exist.\n")
-            return True
-
     def add_income(self):
         print("Enter income:")
         amount = int(input())
@@ -194,6 +191,29 @@ class SimpleBankingSystem:
         self.change_balance("+", amount, self.logged_account)
         self.conn.commit()
         print("Income was added!\n")
+
+    def check_card_number_warnings(self, card_number):
+        if not LuhnAlgorithm.check_card_number(card_number):
+            print(
+                "Probably you made a mistake in the card number. "
+                "Please try again!\n"
+            )
+
+            return True
+
+        if not self.cur.execute(
+                "SELECT COUNT() FROM card "
+                "WHERE number = ?;",
+                (card_number,)
+        ).fetchone()[0]:
+            print("Such a card does not exist.\n")
+
+            return True
+
+        if card_number == self.logged_account:
+            print("Can not transfer to your own account!\n")
+
+            return True
 
     def do_transfer(self):
         print("Transfer\nEnter card number:")
@@ -240,13 +260,9 @@ class SimpleBankingSystem:
     def withdraw(self):
         print("Enter how much money you want to withdraw:")
         amount = int(input())
-        balance = self.get_balance()
 
-        if amount > balance:
-            return print("Not enough money!\n")
-
-        if amount <= 0:
-            return print("The amount must be a natural number!\n")
+        if self.check_amount_warnings(amount):
+            return
 
         self.change_balance("-", amount, self.logged_account)
         self.conn.commit()
