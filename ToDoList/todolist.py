@@ -25,6 +25,17 @@ class ToDoList:
     def __init__(self, engine_properties=default_engine_properties):
         self.engine = create_engine(engine_properties, poolclass=NullPool)
         self.session = None
+        self.menu = {
+            "main": {
+                "1": (self.show_today_tasks, "Today's tasks"),
+                "2": (self.show_week_tasks, "Week's tasks"),
+                "3": (self.show_all_tasks, "All tasks"),
+                "4": (self.show_missed_tasks, "Missed tasks"),
+                "5": (self.add_task, "Add task"),
+                "6": (self.delete_task, "Delete task"),
+            }
+        }
+        self.selected_menu_area = "main"
 
     @staticmethod
     def show_tasks(tasks):
@@ -42,12 +53,11 @@ class ToDoList:
             print(f"{number}. {task}. {deadline}")
 
     def show_today_tasks(self):
-        print("\nToday:")
+        print("Today:")
         tasks = self.session.query(Tasks).filter(Tasks.deadline == today).all()
         self.show_tasks(tasks)
 
     def show_week_tasks(self):
-        print()
         for q in range(7):
             the_day = today + timedelta(days=q)
             print(the_day.strftime("%A %d %b:"))
@@ -59,7 +69,7 @@ class ToDoList:
             self.show_tasks(tasks)
 
     def show_all_tasks(self):
-        print("\nAll tasks:")
+        print("All tasks:")
         tasks = self.session.query(Tasks).order_by(Tasks.deadline).all()
 
         if tasks:
@@ -69,7 +79,7 @@ class ToDoList:
             print("Nothing to do!\n")
 
     def show_missed_tasks(self):
-        print("\nMissed tasks:")
+        print("Missed tasks:")
         tasks = self.session.query(
             Tasks
         ).filter(
@@ -85,7 +95,7 @@ class ToDoList:
             print("Nothing is missed!\n")
 
     def add_task(self):
-        print("\nEnter task")
+        print("Enter task")
         task = input()
         print(
             "Enter deadline (format: YYYY-MM-DD) "
@@ -103,14 +113,10 @@ class ToDoList:
         print("The task has been added!\n")
 
     def delete_task(self):
-        tasks = self.session.query(
-            Tasks
-        ).order_by(
-            Tasks.deadline
-        ).all()
+        tasks = self.session.query(Tasks).order_by(Tasks.deadline).all()
 
         if tasks:
-            print("\nChoose the number of the task you want to delete:")
+            print("Choose the number of the task you want to delete:")
             self.show_tasks_and_deadlines(tasks)
             task_number = int(input())
 
@@ -122,22 +128,11 @@ class ToDoList:
                 print("\nNo such task number!\n")
 
         else:
-            print("\nNothing to delete!\n")
-
-    @property
-    def menu(self):
-        return {
-            "1": (self.show_today_tasks, "Today's tasks"),
-            "2": (self.show_week_tasks, "Week's tasks"),
-            "3": (self.show_all_tasks, "All tasks"),
-            "4": (self.show_missed_tasks, "Missed tasks"),
-            "5": (self.add_task, "Add task"),
-            "6": (self.delete_task, "Delete task"),
-        }
+            print("Nothing to delete!\n")
 
     def show_menu(self):
-        for item in self.menu:
-            print(f"{item}) {self.menu[item][1]}")
+        for item in self.menu[self.selected_menu_area]:
+            print(f"{item}) {self.menu[self.selected_menu_area][item][1]}")
         print("0) Exit\n")
 
     def run(self):
@@ -147,20 +142,21 @@ class ToDoList:
         while True:
             self.show_menu()
             command = input()
+            print()
 
             if command == "0":
                 self.session.close()
                 self.session = None
-                print("\nBye!")
+                print("Bye!")
                 break
-            elif command in self.menu:
+            elif command in self.menu[self.selected_menu_area]:
                 try:
-                    self.menu[command][0].__call__()
+                    self.menu[self.selected_menu_area][command][0].__call__()
                 except ValueError:
-                    print("\nUnexpected input format!\n")
+                    print("Unexpected input format!\n")
                     continue
             else:
-                print("\nUnknown command!\n")
+                print("Unknown command!\n")
 
 
 def main():
