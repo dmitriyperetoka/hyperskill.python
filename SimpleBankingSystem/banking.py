@@ -43,10 +43,24 @@ class SimpleBankingSystem:
         self.account_id_length = account_id_length
         self.pin_length = pin_length
         self.database_file_name = database_file_name
-        self.selected_menu_area = None
         self.logged_account = None
         self.conn = None
         self.cur = None
+        self.menu = {
+            "main": {
+                "1": (self.create_account, "Create an account"),
+                "2": (self.login_account, "Log into account"),
+            },
+            "account": {
+                "1": (self.show_balance, "Balance"),
+                "2": (self.add_income, "Add income"),
+                "3": (self.do_transfer, "Do transfer"),
+                "4": (self.close_account, "Close account"),
+                "5": (self.logout_account, "Log out"),
+                "6": (self.withdraw, "Withdraw"),
+            },
+        }
+        self.selected_menu_area = "main"
 
     def create_table_if_not_exists(self):
         self.cur.execute(
@@ -104,7 +118,7 @@ class SimpleBankingSystem:
         )
         self.conn.commit()
         print(
-            "\nYour card has been created\n"
+            "Your card has been created\n"
             "Your card number:\n"
             f"{card_number}\n"
             "Your card PIN:\n"
@@ -112,7 +126,7 @@ class SimpleBankingSystem:
         )
 
     def login_account(self):
-        print("\nEnter your card number:")
+        print("Enter your card number:")
         card_number = input()
         print("Enter your PIN:")
         pin = input()
@@ -134,6 +148,10 @@ class SimpleBankingSystem:
             (self.logged_account,)
         ).fetchone()[0]
 
+    def show_balance(self):
+        balance = self.get_balance()
+        print(f"Balance: {balance}\n")
+
     def change_balance(self, operator, amount, account):
         self.cur.execute(
             f"UPDATE card SET balance = balance {operator} ? "
@@ -141,40 +159,54 @@ class SimpleBankingSystem:
             (amount, account)
         )
 
-    def show_balance(self):
-        balance = self.get_balance()
-        print(f"\nBalance: {balance}\n")
+    def check_amount_warnings(self, amount, check_balance=True):
+        if amount <= 0:
+            print("The amount must be a natural number!\n")
+            return True
 
-    def add_income(self):
-        print("\nEnter income:")
-        income = int(input())
-        self.change_balance("+", income, self.logged_account)
-        self.conn.commit()
-        print("Income was added!\n")
+        if check_balance and amount > self.get_balance():
+            print("Not enough money!\n")
+            return True
 
-    def do_transfer(self):
-        print("\nTransfer\nEnter card number:")
-        destination_card_number = input()
-
+    def check_card_number_warnings(self, destination_card_number):
         if not LuhnAlgorithm.check_card_number(destination_card_number):
-            return print(
+            print(
                 "Probably you made a mistake in the card number. "
                 "Please try again!\n"
             )
+            return True
 
         if not self.cur.execute(
                 "SELECT COUNT() FROM card "
                 "WHERE number = ?;",
                 (destination_card_number,)
         ).fetchone()[0]:
-            return print("\nSuch a card does not exist.\n")
+            print("\nSuch a card does not exist.\n")
+            return True
+
+    def add_income(self):
+        print("Enter income:")
+        amount = int(input())
+
+        if self.check_amount_warnings(amount, check_balance=False):
+            return
+
+        self.change_balance("+", amount, self.logged_account)
+        self.conn.commit()
+        print("Income was added!\n")
+
+    def do_transfer(self):
+        print("Transfer\nEnter card number:")
+        destination_card_number = input()
+
+        if self.check_card_number_warnings(destination_card_number):
+            return
 
         print("Enter how much money you want to transfer:")
         amount = int(input())
-        balance = self.get_balance()
 
-        if amount > balance:
-            return print("Not enough money!\n")
+        if self.check_amount_warnings(amount):
+            return
 
         self.change_balance("-", amount, self.logged_account)
         self.change_balance("+", amount, destination_card_number)
@@ -186,7 +218,7 @@ class SimpleBankingSystem:
 
         if balance != 0:
             return print(
-                "\nOnly empty accounts can be closed! "
+                "Only empty accounts can be closed! "
                 f"Your balance is {balance}.\n"
                 "Please transfer or withdraw all the money and try again.\n"
             )
@@ -197,46 +229,32 @@ class SimpleBankingSystem:
         )
         self.conn.commit()
         self.logged_account = None
-        self.selected_menu_area = None
-        print("\nThe account is successfully closed!\n")
+        self.selected_menu_area = "main"
+        print("The account is successfully closed!\n")
 
     def logout_account(self):
         self.logged_account = None
-        self.selected_menu_area = None
-        print("\nYou have successfully logged out!\n")
+        self.selected_menu_area = "main"
+        print("You have successfully logged out!\n")
 
     def withdraw(self):
-        print("\nWithdraw\nEnter how much money you want to withdraw:")
+        print("Enter how much money you want to withdraw:")
         amount = int(input())
         balance = self.get_balance()
 
         if amount > balance:
             return print("Not enough money!\n")
 
+        if amount <= 0:
+            return print("The amount must be a natural number!\n")
+
         self.change_balance("-", amount, self.logged_account)
         self.conn.commit()
         print("Success!\n")
 
-    @property
-    def menu(self):
-        if self.selected_menu_area == "account":
-            return {
-                "1": (self.show_balance, "Balance"),
-                "2": (self.add_income, "Add income"),
-                "3": (self.do_transfer, "Do transfer"),
-                "4": (self.close_account, "Close account"),
-                "5": (self.logout_account, "Log out"),
-                "6": (self.withdraw, "Withdraw")
-            }
-        else:
-            return {
-                "1": (self.create_account, "Create an account"),
-                "2": (self.login_account, "Log into account"),
-            }
-
     def show_menu(self):
-        for q in self.menu:
-            print(f"{q}. {self.menu[q][1]}")
+        for item in self.menu[self.selected_menu_area]:
+            print(f"{item}. {self.menu[self.selected_menu_area][item][1]}")
         print("0. Exit\n")
 
     def run(self):
@@ -247,19 +265,21 @@ class SimpleBankingSystem:
         while True:
             self.show_menu()
             command = input()
+            print()
 
             if command == "0":
                 self.conn.close()
                 self.conn, self.cur = None, None
+                print("Bye!")
                 break
-            elif command in self.menu:
+            elif command in self.menu[self.selected_menu_area]:
                 try:
-                    self.menu[command][0].__call__()
+                    self.menu[self.selected_menu_area][command][0].__call__()
                 except ValueError:
-                    print("\nUnexpected input format!\n")
+                    print("Unexpected input format!\n")
                     continue
             else:
-                print("\nUnknown command!\n")
+                print("Unknown command!\n")
 
 
 def main():
