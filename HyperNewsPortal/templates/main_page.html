@@ -3,7 +3,7 @@
 {% block content %}
 <h2>Hyper news</h2>
 <form action="/news/" method="GET">
-    <input name="q" type="text" placeholder="Search news by title">
+    <input name="q" type="text" placeholder="Search news">
     <button type="submit">Search</button>
 </form>
 {% regroup articles|dictsortreversed:"created" by created.date as dates %}

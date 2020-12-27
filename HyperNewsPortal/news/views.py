@@ -25,12 +25,13 @@ def main_page(request):
     query = request.GET.get('q')
 
     if query:
-        articles = tuple(q for q in articles if query in q['title'])
+        articles = [
+            q for q in articles if query in q['title'] or query in q['text']
+        ]
 
     for article in articles:
         article['created'] = datetime.datetime.strptime(
-            article['created'],
-            '%Y-%m-%d %H:%M:%S'
+            article['created'], '%Y-%m-%d %H:%M:%S'
         )
 
     return render(request, 'main_page.html', {'articles': articles})
