@@ -1,9 +1,12 @@
 import datetime
 import json
+import random
 
 from django.conf import settings
 from django.http import HttpResponse
 from django.shortcuts import redirect, render
+
+from .services import binary_search, insertion_sort
 
 
 def index(request):  # noqa
@@ -39,10 +42,12 @@ def main_page(request):
 
 def article_page(request, link):
     articles = get_articles()
+    article_index = binary_search(articles, link)
 
-    for article in articles:
-        if article['link'] == link:
-            return render(request, 'article_page.html', {'article': article})
+    if article_index is not False:
+        return render(
+            request, 'article_page.html', {'article': articles[article_index]}
+        )
 
     return HttpResponse(status=404)
 
@@ -54,12 +59,10 @@ def create_article(request):
 
         if title and text:
             articles = get_articles()
-
-            if articles:
-                link = max(q['link'] for q in articles) + 1
-            else:
-                link = 1
-
+            existing_links = {q['link'] for q in articles}
+            link = random.choice(
+                [q for q in range(1000000, 9999999) if q not in existing_links]
+            )
             created = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
             article = {
                 'created': created,
@@ -68,6 +71,7 @@ def create_article(request):
                 'link': link
             }
             articles.append(article)
+            insertion_sort(articles)
 
             with open(settings.NEWS_JSON_PATH, 'w') as json_file:
                 json.dump(articles, json_file)
