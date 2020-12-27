@@ -2,7 +2,7 @@ import datetime
 import json
 
 from django.conf import settings
-from django.http import Http404
+from django.http import HttpResponse
 from django.shortcuts import redirect, render
 
 
@@ -44,7 +44,7 @@ def article_page(request, link):
         if article['link'] == link:
             return render(request, 'article_page.html', {'article': article})
 
-    raise Http404
+    return HttpResponse(status=404)
 
 
 def create_article(request):
