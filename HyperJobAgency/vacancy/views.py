@@ -1,7 +1,10 @@
+from typing import Any, Dict
+
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from django.contrib.auth.views import LoginView
-from django.http import HttpResponse
+from django.http.response import HttpResponse, HttpResponseRedirect
+from django.http.request import HttpRequest
 from django.shortcuts import redirect
 from django.utils.decorators import method_decorator
 from django.views.generic import CreateView
@@ -32,7 +35,7 @@ class TheLoginView(LoginView):
 class HomeView(TemplateView):
     template_name = 'home.html'
 
-    def get_context_data(self, **kwargs):
+    def get_context_data(self, **kwargs: Dict[str, Any]) -> Dict[str, str]:
         context = super().get_context_data(**kwargs)
 
         if self.request.user.is_staff:
@@ -50,7 +53,7 @@ class VacancyListView(ListView):
     page_title = 'Vacancies'
     model = Vacancy
 
-    def get_context_data(self, **kwargs):
+    def get_context_data(self, **kwargs: Dict[str, Any]) -> Dict[str, str]:
         context = super().get_context_data(**kwargs)
         context['page_title'] = self.page_title
         return context
@@ -62,13 +65,17 @@ class VacancyCreateView(CreateView):
     success_url = 'home'
     is_for_staff = True
 
-    def post(self, request, *args, **kwargs):
+    def post(
+            self,
+            request: HttpRequest,
+            **kwargs: Dict[str, str]
+    ) -> HttpResponse:
         if self.request.user.is_staff == self.is_for_staff:
-            return super().post(request, *args, **kwargs)
+            return super().post(request, **kwargs)
 
         return HttpResponse(status=403)
 
-    def form_valid(self, form):
+    def form_valid(self, form: VacancyCreateForm) -> HttpResponseRedirect:
         article = form.save(commit=False)
         article.author = self.request.user
         article.save()
