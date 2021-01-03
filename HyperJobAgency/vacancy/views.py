@@ -7,10 +7,9 @@ from django.utils.decorators import method_decorator
 from django.views.generic import CreateView
 from django.views.generic import ListView, TemplateView
 
+from .forms import VacancyCreateForm
+from .models import Vacancy
 from resume.forms import ResumeCreateForm
-from resume.models import Resume
-from vacancy.forms import VacancyCreateForm
-from vacancy.models import Vacancy
 
 
 class MenuView(TemplateView):
@@ -46,9 +45,10 @@ class HomeView(TemplateView):
         return context
 
 
-class ArticlesListView(ListView):
+class VacancyListView(ListView):
     template_name = 'articles_list.html'
-    page_title = None
+    page_title = 'Vacancies'
+    model = Vacancy
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -56,20 +56,11 @@ class ArticlesListView(ListView):
         return context
 
 
-class ResumeListView(ArticlesListView):
-    page_title = 'Resumes'
-    model = Resume
-
-
-class VacancyListView(ArticlesListView):
-    page_title = 'Vacancies'
-    model = Vacancy
-
-
 @method_decorator(login_required, name='dispatch')
-class ArticleCreateView(CreateView):
+class VacancyCreateView(CreateView):
+    form_class = VacancyCreateForm
     success_url = 'home'
-    is_for_staff = None
+    is_for_staff = True
 
     def post(self, request, *args, **kwargs):
         if self.request.user.is_staff == self.is_for_staff:
@@ -82,13 +73,3 @@ class ArticleCreateView(CreateView):
         article.author = self.request.user
         article.save()
         return redirect(self.success_url)
-
-
-class ResumeCreateView(ArticleCreateView):
-    form_class = ResumeCreateForm
-    is_for_staff = False
-
-
-class VacancyCreateView(ArticleCreateView):
-    form_class = VacancyCreateForm
-    is_for_staff = True

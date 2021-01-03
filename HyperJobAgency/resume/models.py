@@ -1,9 +1,5 @@
-from django.contrib.auth.models import User
-from django.db import models
+from vacancy.models import AbstractVacancy
 
 
-class Resume(models.Model):
-    author = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name='resumes'
-    )
-    description = models.TextField(max_length=1024)
+class Resume(AbstractVacancy):
+    author_field_related_name = 'resumes'

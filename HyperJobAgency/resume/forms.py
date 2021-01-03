@@ -1,9 +1,7 @@
-from django import forms
-
 from .models import Resume
+from vacancy.forms import VacancyCreateForm
 
 
-class ResumeCreateForm(forms.ModelForm):
-    class Meta:
+class ResumeCreateForm(VacancyCreateForm):
+    class Meta(VacancyCreateForm.Meta):
         model = Resume
-        fields = ('description',)
