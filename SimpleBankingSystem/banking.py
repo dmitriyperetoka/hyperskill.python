@@ -4,7 +4,7 @@ import sqlite3
 
 class LuhnAlgorithm:
     @staticmethod
-    def get_reminder(card_number_without_checksum):
+    def get_reminder(card_number_without_checksum: str) -> int:
         digits_sum = 0
 
         for index, element in enumerate(card_number_without_checksum[::-1]):
@@ -18,7 +18,7 @@ class LuhnAlgorithm:
         return digits_sum % 10
 
     @classmethod
-    def make_checksum(cls, card_number_without_checksum):
+    def make_checksum(cls, card_number_without_checksum: str) -> str:
         reminder = cls.get_reminder(card_number_without_checksum)
 
         if reminder:
@@ -27,18 +27,18 @@ class LuhnAlgorithm:
         return "0"
 
     @classmethod
-    def check_card_number(cls, card_number):
+    def check_card_number(cls, card_number: str) -> bool:
         return cls.make_checksum(card_number[:-1]) == card_number[-1]
 
 
 class SimpleBankingSystem:
     def __init__(
             self,
-            card_issuer_id,
-            account_id_length=9,
-            pin_length=4,
-            database_file_name="card.s3db"
-    ):
+            card_issuer_id: str,
+            account_id_length: int = 9,
+            pin_length: int = 4,
+            database_file_name: str = "card.s3db"
+    ) -> None:
         self.card_issuer_id = card_issuer_id
         self.account_id_length = account_id_length
         self.pin_length = pin_length
@@ -62,7 +62,7 @@ class SimpleBankingSystem:
         }
         self.selected_menu_area = "main"
 
-    def create_table_if_not_exists(self):
+    def create_table_if_not_exists(self) -> None:
         self.cur.execute(
             "CREATE TABLE IF NOT EXISTS card ("
             "id INTEGER PRIMARY KEY, "
@@ -72,7 +72,7 @@ class SimpleBankingSystem:
             ");"
         )
 
-    def make_account_id(self):
+    def make_account_id(self) -> str:
         account_id = ""
 
         while True:
@@ -94,14 +94,14 @@ class SimpleBankingSystem:
 
         return account_id
 
-    def make_card_number(self):
+    def make_card_number(self) -> str:
         account_id = self.make_account_id()
         checksum = LuhnAlgorithm.make_checksum(
             self.card_issuer_id + account_id
         )
         return self.card_issuer_id + account_id + checksum
 
-    def make_pin(self):
+    def make_pin(self) -> str:
         pin = ""
 
         for _ in range(self.pin_length):
@@ -109,7 +109,7 @@ class SimpleBankingSystem:
 
         return pin
 
-    def create_account(self):
+    def create_account(self) -> None:
         card_number = self.make_card_number()
         pin = self.make_pin()
         self.cur.execute(
@@ -125,7 +125,7 @@ class SimpleBankingSystem:
             f"{pin}\n"
         )
 
-    def validate_card_number_and_pin(self, card_number, pin):
+    def validate_card_number_and_pin(self, card_number: str, pin: str) -> bool:
         return (
             len(card_number)
             == len(self.card_issuer_id) + self.account_id_length + 1
@@ -135,7 +135,7 @@ class SimpleBankingSystem:
             and LuhnAlgorithm.check_card_number(card_number)
         )
 
-    def login_account(self):
+    def login_account(self) -> None:
         print("Enter your card number:")
         card_number = input()
         print("Enter your PIN:")
@@ -155,24 +155,28 @@ class SimpleBankingSystem:
         self.selected_menu_area = "account"
         print("\nYou have successfully logged in!\n")
 
-    def get_balance(self):
+    def get_balance(self) -> int:
         return self.cur.execute(
             "SELECT balance FROM card WHERE number = ?;",
             (self.logged_account,)
         ).fetchone()[0]
 
-    def show_balance(self):
+    def show_balance(self) -> None:
         balance = self.get_balance()
         print(f"Balance: {balance}\n")
 
-    def change_balance(self, operator, amount, account):
+    def change_balance(self, operator: str, amount: int, account: str) -> None:
         self.cur.execute(
             f"UPDATE card SET balance = balance {operator} ? "
             "WHERE number = ?;",
             (amount, account)
         )
 
-    def check_amount_warnings(self, amount, check_balance=True):
+    def check_amount_warnings(
+            self,
+            amount: int,
+            check_balance: bool = True
+    ) -> bool:
         if amount <= 0:
             print("The amount must be a natural number!\n")
             return True
@@ -181,7 +185,7 @@ class SimpleBankingSystem:
             print("Not enough money!\n")
             return True
 
-    def add_income(self):
+    def add_income(self) -> None:
         print("Enter income:")
         amount = int(input())
 
@@ -192,7 +196,7 @@ class SimpleBankingSystem:
         self.conn.commit()
         print("Income was added!\n")
 
-    def check_card_number_warnings(self, card_number):
+    def check_card_number_warnings(self, card_number: str) -> bool:
         if not LuhnAlgorithm.check_card_number(card_number):
             print(
                 "Probably you made a mistake in the card number. "
@@ -215,7 +219,7 @@ class SimpleBankingSystem:
 
             return True
 
-    def do_transfer(self):
+    def do_transfer(self) -> None:
         print("Transfer\nEnter card number:")
         destination_card_number = input()
 
@@ -233,7 +237,7 @@ class SimpleBankingSystem:
         self.conn.commit()
         print("Success!\n")
 
-    def close_account(self):
+    def close_account(self) -> None:
         balance = self.get_balance()
 
         if balance != 0:
@@ -252,12 +256,12 @@ class SimpleBankingSystem:
         self.selected_menu_area = "main"
         print("The account is successfully closed!\n")
 
-    def logout_account(self):
+    def logout_account(self) -> None:
         self.logged_account = None
         self.selected_menu_area = "main"
         print("You have successfully logged out!\n")
 
-    def withdraw(self):
+    def withdraw(self) -> None:
         print("Enter how much money you want to withdraw:")
         amount = int(input())
 
@@ -268,12 +272,12 @@ class SimpleBankingSystem:
         self.conn.commit()
         print("Success!\n")
 
-    def show_menu(self):
+    def show_menu(self) -> None:
         for item in self.menu[self.selected_menu_area]:
             print(f"{item}. {self.menu[self.selected_menu_area][item][1]}")
         print("0. Exit\n")
 
-    def run(self):
+    def run(self) -> None:
         self.conn = sqlite3.connect(self.database_file_name)
         self.cur = self.conn.cursor()
         self.create_table_if_not_exists()
@@ -298,7 +302,7 @@ class SimpleBankingSystem:
                 print("Unknown command!\n")
 
 
-def main():
+def main() -> None:
     simple_banking_system = SimpleBankingSystem("400000")
     simple_banking_system.run()
 
