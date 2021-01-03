@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+from typing import List
 
 from sqlalchemy import Column, Date, Integer, String, create_engine
 from sqlalchemy.ext.declarative import declarative_base
@@ -8,7 +9,7 @@ from sqlalchemy.orm import sessionmaker
 today = datetime.today().date()
 
 Base = declarative_base()
-default_engine_properties = "sqlite:///todo.db?check_same_thread=False"
+default_engine_params = "sqlite:///todo.db?check_same_thread=False"
 
 
 class Tasks(Base):
@@ -17,13 +18,13 @@ class Tasks(Base):
     task = Column(String)
     deadline = Column(Date, default=today)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return self.task
 
 
 class ToDoList:
-    def __init__(self, engine_properties=default_engine_properties):
-        self.engine = create_engine(engine_properties, poolclass=NullPool)
+    def __init__(self, engine_params: str = default_engine_params) -> None:
+        self.engine = create_engine(engine_params, poolclass=NullPool)
         self.session = None
         self.menu = {
             "main": {
@@ -38,7 +39,7 @@ class ToDoList:
         self.selected_menu_area = "main"
 
     @staticmethod
-    def show_tasks(tasks):
+    def show_tasks(tasks: List[Tasks]) -> None:
         if tasks:
             for number, task in enumerate(tasks, 1):
                 print(f"{number}. {task}")
@@ -47,17 +48,17 @@ class ToDoList:
             print("Nothing to do!\n")
 
     @staticmethod
-    def show_tasks_and_deadlines(tasks):
+    def show_tasks_and_deadlines(tasks: List[Tasks]) -> None:
         for number, task in enumerate(tasks, 1):
             deadline = task.deadline.strftime("%d %b").lstrip("0")
             print(f"{number}. {task}. {deadline}")
 
-    def show_today_tasks(self):
+    def show_today_tasks(self) -> None:
         print("Today:")
         tasks = self.session.query(Tasks).filter(Tasks.deadline == today).all()
         self.show_tasks(tasks)
 
-    def show_week_tasks(self):
+    def show_week_tasks(self) -> None:
         for q in range(7):
             the_day = today + timedelta(days=q)
             print(the_day.strftime("%A %d %b:"))
@@ -68,9 +69,10 @@ class ToDoList:
             ).all()
             self.show_tasks(tasks)
 
-    def show_all_tasks(self):
+    def show_all_tasks(self) -> None:
         print("All tasks:")
         tasks = self.session.query(Tasks).order_by(Tasks.deadline).all()
+        print(tasks)
 
         if tasks:
             self.show_tasks_and_deadlines(tasks)
@@ -78,7 +80,7 @@ class ToDoList:
         else:
             print("Nothing to do!\n")
 
-    def show_missed_tasks(self):
+    def show_missed_tasks(self) -> None:
         print("Missed tasks:")
         tasks = self.session.query(
             Tasks
@@ -94,7 +96,7 @@ class ToDoList:
         else:
             print("Nothing is missed!\n")
 
-    def add_task(self):
+    def add_task(self) -> None:
         print("Enter task")
         task = input()
         print(
@@ -112,7 +114,7 @@ class ToDoList:
         self.session.commit()
         print("The task has been added!\n")
 
-    def delete_task(self):
+    def delete_task(self) -> None:
         tasks = self.session.query(Tasks).order_by(Tasks.deadline).all()
 
         if tasks:
@@ -130,12 +132,12 @@ class ToDoList:
         else:
             print("Nothing to delete!\n")
 
-    def show_menu(self):
+    def show_menu(self) -> None:
         for item in self.menu[self.selected_menu_area]:
             print(f"{item}) {self.menu[self.selected_menu_area][item][1]}")
         print("0) Exit\n")
 
-    def run(self):
+    def run(self) -> None:
         self.session = sessionmaker(bind=self.engine).__call__()
         Base.metadata.create_all(bind=self.engine)
 
@@ -159,7 +161,7 @@ class ToDoList:
                 print("Unknown command!\n")
 
 
-def main():
+def main() -> None:
     todo_list = ToDoList()
     todo_list.run()
 
