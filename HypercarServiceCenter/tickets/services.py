@@ -24,7 +24,7 @@ class SubQueue:
 
         return False
 
-    def enqueue(self, ticket):
+    def push(self, ticket):
         if self.is_empty():
             self.head = ticket
             self.tail = ticket
@@ -34,7 +34,7 @@ class SubQueue:
 
         self.length += 1
 
-    def dequeue(self):
+    def pop(self):
         ticket_number = self.head.number
         self.length -= 1
 
@@ -60,13 +60,13 @@ class Queue:
 
     def issue_ticket(self, service):
         ticket = Ticket()
-        self.sub_queues[service].enqueue(ticket)
+        self.sub_queues[service].push(ticket)
         return ticket.number
 
     def process(self):
         for sub_que in self.sub_queues.values():
             if not sub_que.is_empty():
-                self.next_ticket_number = sub_que.dequeue()
+                self.next_ticket_number = sub_que.pop()
                 break
 
     def estimate_waiting_time(self, new_ticket_service):
