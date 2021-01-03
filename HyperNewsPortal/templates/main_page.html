@@ -6,9 +6,9 @@
     <input name="q" type="text" placeholder="Search news">
     <button type="submit">Search</button>
 </form>
-{% regroup articles|dictsortreversed:"created" by created.date as dates %}
+{% regroup articles|dictsortreversed:"created" by created|slice:":11" as dates %}
 {% for date in dates %}
-<h4>{{ date.grouper|date:"Y-m-d" }}</h4>
+<h4>{{ date.grouper }}</h4>
 <ul>
     {% for article in date.list %}
     <li><a href="/news/{{ article.link }}/">{{ article.title }}</a></li>

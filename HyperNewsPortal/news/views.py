@@ -1,17 +1,21 @@
 import datetime
 import json
 import random
+from typing import Dict, List, Union
 
 from django.conf import settings
-from django.http import HttpResponse
+from django.http.response import HttpResponse, HttpResponseRedirect
+from django.http.request import HttpRequest
 from django.shortcuts import redirect, render
 
+DATETIME_FORMATTING = '%Y-%m-%d %H:%M:%S'
 
-def index(request):  # noqa
+
+def index(request: HttpRequest) -> HttpResponseRedirect:  # noqa
     return redirect('main_page')
 
 
-def get_articles():
+def get_articles() -> List[Dict[str, Union[str, int]]]:
     try:
         with open(settings.NEWS_JSON_PATH, 'r', encoding='utf-8') as file:
             articles = json.load(file)
@@ -21,7 +25,7 @@ def get_articles():
         return articles
 
 
-def main_page(request):
+def main_page(request: HttpRequest) -> HttpResponse:
     articles = get_articles()
     query = request.GET.get('q')
 
@@ -30,26 +34,21 @@ def main_page(request):
             q for q in articles if query in q['title'] or query in q['text']
         ]
 
-    for article in articles:
-        article['created'] = datetime.datetime.strptime(
-            article['created'], '%Y-%m-%d %H:%M:%S'
-        )
-
     return render(request, 'main_page.html', {'articles': articles})
 
 
-def article_page(request, link):
+def article_page(request: HttpRequest, link: int) -> HttpResponse:
     articles = get_articles()
     for article in articles:
         if article['link'] == link:
-            return render(
-                request, 'article_page.html', {'article': article}
-            )
+            return render(request, 'article_page.html', {'article': article})
 
     return HttpResponse(status=404)
 
 
-def create_article(request):
+def create_article(
+        request: HttpRequest
+) -> Union[HttpResponse, HttpResponseRedirect]:
     if request.method == 'POST':
         title = request.POST.get('title')
         text = request.POST.get('text')
@@ -61,7 +60,7 @@ def create_article(request):
             link = random.choice(
                 [q for q in range(1000000, 9999999) if q not in existing_links]
             )
-            created = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            created = datetime.datetime.now().strftime(DATETIME_FORMATTING)
 
             article = {
                 'created': created,
