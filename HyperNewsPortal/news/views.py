@@ -6,8 +6,6 @@ from django.conf import settings
 from django.http import HttpResponse
 from django.shortcuts import redirect, render
 
-from .services import binary_search, insertion_sort
-
 
 def index(request):  # noqa
     return redirect('main_page')
@@ -15,8 +13,8 @@ def index(request):  # noqa
 
 def get_articles():
     try:
-        with open(settings.NEWS_JSON_PATH, 'r') as json_file:
-            articles = json.load(json_file)
+        with open(settings.NEWS_JSON_PATH, 'r', encoding='utf-8') as file:
+            articles = json.load(file)
     except FileNotFoundError:
         return []
     else:
@@ -42,12 +40,11 @@ def main_page(request):
 
 def article_page(request, link):
     articles = get_articles()
-    article_index = binary_search(articles, link)
-
-    if article_index is not False:
-        return render(
-            request, 'article_page.html', {'article': articles[article_index]}
-        )
+    for article in articles:
+        if article['link'] == link:
+            return render(
+                request, 'article_page.html', {'article': article}
+            )
 
     return HttpResponse(status=404)
 
@@ -60,21 +57,23 @@ def create_article(request):
         if title and text:
             articles = get_articles()
             existing_links = {q['link'] for q in articles}
+
             link = random.choice(
                 [q for q in range(1000000, 9999999) if q not in existing_links]
             )
             created = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+
             article = {
                 'created': created,
                 'text': text,
                 'title': title,
                 'link': link
             }
-            articles.append(article)
-            insertion_sort(articles)
 
-            with open(settings.NEWS_JSON_PATH, 'w') as json_file:
-                json.dump(articles, json_file)
+            articles.append(article)
+
+            with open(settings.NEWS_JSON_PATH, 'w', encoding='utf-8') as file:
+                json.dump(articles, file)
 
             return redirect('main_page')
 
