@@ -5,26 +5,26 @@ class Ticket:
         cls.tickets_issued += 1
         return object.__new__(cls)
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.number = Ticket.tickets_issued
         self.next = None
 
 
 class SubQueue:
-    def __init__(self, service, minutes_per_ticket):
+    def __init__(self, service: str, minutes_per_ticket: int) -> None:
         self.minutes_per_ticket = minutes_per_ticket
         self.service = service
         self.length = 0
         self.head = None
         self.tail = None
 
-    def is_empty(self):
+    def is_empty(self) -> bool:
         if self.length == 0:
             return True
 
         return False
 
-    def push(self, ticket):
+    def push(self, ticket: Ticket) -> None:
         if self.is_empty():
             self.head = ticket
             self.tail = ticket
@@ -34,8 +34,8 @@ class SubQueue:
 
         self.length += 1
 
-    def pop(self):
-        ticket_number = self.head.number
+    def pop(self) -> Ticket:
+        ticket = self.head
         self.length -= 1
 
         if self.is_empty():
@@ -43,14 +43,14 @@ class SubQueue:
         else:
             self.head = self.head.next
 
-        return ticket_number
+        return ticket
 
-    def estimate_waiting_time(self):
+    def estimate_waiting_time(self) -> int:
         return self.minutes_per_ticket * self.length
 
 
 class Queue:
-    def __init__(self):
+    def __init__(self) -> None:
         self.next_ticket_number = None
         self.sub_queues = {
             'change_oil': SubQueue('Change oil', 2),
@@ -58,18 +58,18 @@ class Queue:
             'diagnostic': SubQueue('Get diagnostic', 30),
         }
 
-    def issue_ticket(self, service):
+    def issue_ticket(self, service: str) -> int:
         ticket = Ticket()
         self.sub_queues[service].push(ticket)
         return ticket.number
 
-    def process(self):
+    def process(self) -> None:
         for sub_que in self.sub_queues.values():
             if not sub_que.is_empty():
-                self.next_ticket_number = sub_que.pop()
+                self.next_ticket_number = sub_que.pop().number
                 break
 
-    def estimate_waiting_time(self, new_ticket_service):
+    def estimate_waiting_time(self, new_ticket_service: str) -> int:
         estimated_time = 0
 
         for service, sub_queue in self.sub_queues.items():

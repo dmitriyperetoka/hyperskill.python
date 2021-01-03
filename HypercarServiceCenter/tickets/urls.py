@@ -10,7 +10,7 @@ urlpatterns = [
         'get_ticket/<str:service>/', views.GetTicketView.as_view(),
         name='get_ticket'
     ),
-    path('processing', views.ProcessingView.as_view(), name='processing'),
+    path('processing', views.ProcessView.as_view(), name='processing'),
     path('processing/', RedirectView.as_view(url='/processing')),
     path('next/', views.NextView.as_view(), name='next'),
 ]
