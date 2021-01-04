@@ -36,8 +36,8 @@ class LuhnAlgorithm:
 
 
 class SimpleBankingSystem:
-    """Simple banking system with database that can store accounts
-    and transactions.
+    """Simple banking system with database that can store and manage
+    accounts.
     """
 
     def __init__(
