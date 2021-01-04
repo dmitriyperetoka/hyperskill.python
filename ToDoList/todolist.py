@@ -19,7 +19,6 @@ class Tasks(Base):
     deadline = Column(Date, default=datetime.today().date())
 
     def __repr__(self) -> str:
-        """Represent each line of the table in string format."""
         return self.task
 
 
