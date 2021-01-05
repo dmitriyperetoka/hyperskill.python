@@ -1,8 +1,8 @@
 {% extends "base.html" %}
-{% block title %}Create a new {{ article_type }}{% endblock %}
+{% block title %}Create a new {{ object_type }}{% endblock %}
 {% block content %}
-<h2>Create a new {{ article_type }}</h2>
-<form method="post" action="../{{ article_type }}/new">{% csrf_token %}
+<h2>Create a new {{ object_type }}</h2>
+<form method="post" action="../{{ object_type }}/new">{% csrf_token %}
     <table>{{ form.as_table }}</table>
     <button type="submit">Create</button>
 </form>

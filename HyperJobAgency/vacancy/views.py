@@ -45,18 +45,16 @@ class HomeView(TemplateView):
     template_name = 'home.html'
 
     def get_context_data(self) -> Dict[
-        str, Union[str, ResumeCreateForm, VacancyCreateForm, TemplateView]
+        str, Union[str, ResumeCreateForm, VacancyCreateForm]
     ]:
-        context = super().get_context_data()
-
         if self.request.user.is_staff:
-            context['article_type'] = 'vacancy'
-            context['form'] = VacancyCreateForm()
+            article_type = 'vacancy',
+            form = VacancyCreateForm()
         else:
-            context['article_type'] = 'resume'
-            context['form'] = ResumeCreateForm()
+            article_type = 'resume',
+            form = ResumeCreateForm()
 
-        return context
+        return {'article_type': article_type, 'form': form}
 
 
 class VacancyListView(ListView):

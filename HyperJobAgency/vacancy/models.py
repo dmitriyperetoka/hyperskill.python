@@ -6,6 +6,7 @@ class AbstractVacancy(models.Model):
     """Base class for the models of vacancies and other articles
     with the same basic data structure.
     """
+
     foreign_key_related_name = None
     author = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name=foreign_key_related_name
@@ -18,4 +19,5 @@ class AbstractVacancy(models.Model):
 
 class Vacancy(AbstractVacancy):
     """Store vacancies in the database."""
+
     foreign_key_related_name = 'vacancies'
