@@ -35,15 +35,12 @@ class GetTicketView(TemplateView):
 
     template_name = 'get_ticket.html'
 
-    def get_context_data(
-            self,
-            **kwargs: Dict[str, str]
-    ) -> Dict[str, Union[str, int]]:
-        context = super().get_context_data(**kwargs)
-        service = context['service']
-        context['waiting_time'] = queue.estimate_waiting_time(service)
-        context['ticket_number'] = queue.issue_ticket(service)
-        return context
+    def get_context_data(self, service: str) -> Dict[str, Union[int, str]]:
+        return {
+            'service': service,
+            'waiting_time': queue.estimate_waiting_time(service),
+            'ticket_number': queue.issue_ticket(service)
+        }
 
 
 class ProcessingView(TemplateView):
@@ -64,5 +61,5 @@ class NextView(TemplateView):
 
     template_name = 'next.html'
 
-    def get_context_data(self) -> Dict[str, int]:
+    def get_context_data(self) -> Dict[str, Union[None, int]]:
         return {'next_ticket_number': queue.next_ticket_number}

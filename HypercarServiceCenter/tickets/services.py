@@ -6,7 +6,7 @@ class Ticket:
 
     tickets_issued = 0
 
-    def __new__(cls):
+    def __new__(cls) -> 'Ticket':
         cls.tickets_issued += 1
         return object.__new__(cls)
 
