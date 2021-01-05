@@ -2,7 +2,7 @@
 {% block title %}{{ page_title }}{% endblock %}
 {% block content %}
 <h2>{{ page_title }}</h2>
-{% for article in object_list %}
-<div>{{ article.author.username }}: {{ article.description }}</div>
+{% for object in object_list %}
+<div>{{ object.author.username }}: {{ object.description }}</div>
 {% endfor %}
 {% endblock %}

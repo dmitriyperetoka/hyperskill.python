@@ -1,8 +1,9 @@
-from typing import Any, Dict
+from typing import Dict, Union
 
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from django.contrib.auth.views import LoginView
+from django.db.models.query import QuerySet
 from django.http.response import HttpResponse, HttpResponseRedirect
 from django.http.request import HttpRequest
 from django.shortcuts import redirect
@@ -16,16 +17,22 @@ from resume.forms import ResumeCreateForm
 
 
 class MenuView(TemplateView):
+    """Display menu page."""
+
     template_name = 'menu.html'
 
 
-class TheSignupView(CreateView):
+class SignupView(CreateView):
+    """Create new user accounts."""
+
     form_class = UserCreationForm
     success_url = 'login'
     template_name = 'signup.html'
 
 
 class TheLoginView(LoginView):
+    """Authenticate users."""
+
     form_class = AuthenticationForm
     redirect_authenticated_user = True
     template_name = 'login.html'
@@ -33,10 +40,14 @@ class TheLoginView(LoginView):
 
 @method_decorator(login_required, name='dispatch')
 class HomeView(TemplateView):
+    """Display the profile page of the user."""
+
     template_name = 'home.html'
 
-    def get_context_data(self, **kwargs: Dict[str, Any]) -> Dict[str, str]:
-        context = super().get_context_data(**kwargs)
+    def get_context_data(self) -> Dict[
+        str, Union[str, ResumeCreateForm, VacancyCreateForm, TemplateView]
+    ]:
+        context = super().get_context_data()
 
         if self.request.user.is_staff:
             context['article_type'] = 'vacancy'
@@ -49,11 +60,15 @@ class HomeView(TemplateView):
 
 
 class VacancyListView(ListView):
-    template_name = 'articles_list.html'
+    """Display list of vacancies."""
+
+    template_name = 'vacancies.html'
     page_title = 'Vacancies'
     model = Vacancy
 
-    def get_context_data(self, **kwargs: Dict[str, Any]) -> Dict[str, str]:
+    def get_context_data(self, **kwargs: dict) -> Dict[
+        str, Union[None, bool, str, QuerySet, ListView]
+    ]:
         context = super().get_context_data(**kwargs)
         context['page_title'] = self.page_title
         return context
@@ -61,15 +76,13 @@ class VacancyListView(ListView):
 
 @method_decorator(login_required, name='dispatch')
 class VacancyCreateView(CreateView):
+    """Create new vacancies."""
+
     form_class = VacancyCreateForm
     success_url = 'home'
     is_for_staff = True
 
-    def post(
-            self,
-            request: HttpRequest,
-            **kwargs: Dict[str, str]
-    ) -> HttpResponse:
+    def post(self, request: HttpRequest, **kwargs: dict) -> HttpResponse:
         if self.request.user.is_staff == self.is_for_staff:
             return super().post(request, **kwargs)
 
