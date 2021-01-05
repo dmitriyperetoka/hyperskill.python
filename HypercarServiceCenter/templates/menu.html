@@ -2,6 +2,6 @@
 {% block title %}Menu{% endblock %}
 {% block content %}
 {% for link, sub_queue in items %}
-<div><a href="/get_ticket/{{ link }}/">{{ sub_queue.service }}</a></div>
+<div><a href="/get_ticket/{{ link }}/">{{ sub_queue }}</a></div>
 {% endfor %}
 {% endblock %}
