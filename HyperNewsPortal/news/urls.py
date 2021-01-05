@@ -2,7 +2,6 @@ from django.urls import path
 
 from . import views
 
-
 urlpatterns = [
     path('news/<int:link>/', views.article_page, name='article_page'),
     path('news/create/', views.create_article, name='create_article'),

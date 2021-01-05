@@ -12,10 +12,14 @@ DATETIME_FORMATTING = '%Y-%m-%d %H:%M:%S'
 
 
 def index(request: HttpRequest) -> HttpResponseRedirect:  # noqa
+    """Redirect to the main page."""
     return redirect('main_page')
 
 
 def get_articles() -> List[Dict[str, Union[str, int]]]:
+    """Return the articles list from JSON file if exists or return
+    empty list.
+    """
     try:
         with open(settings.NEWS_JSON_PATH, 'r', encoding='utf-8') as file:
             articles = json.load(file)
@@ -26,6 +30,9 @@ def get_articles() -> List[Dict[str, Union[str, int]]]:
 
 
 def main_page(request: HttpRequest) -> HttpResponse:
+    """Display the main page with list of articles filtered by query
+    if provided.
+    """
     articles = get_articles()
     query = request.GET.get('q')
 
@@ -38,6 +45,7 @@ def main_page(request: HttpRequest) -> HttpResponse:
 
 
 def article_page(request: HttpRequest, link: int) -> HttpResponse:
+    """Display the page with details a single article."""
     articles = get_articles()
     for article in articles:
         if article['link'] == link:
@@ -49,6 +57,7 @@ def article_page(request: HttpRequest, link: int) -> HttpResponse:
 def create_article(
         request: HttpRequest
 ) -> Union[HttpResponse, HttpResponseRedirect]:
+    """Create an article and append it to the JSON file."""
     if request.method == 'POST':
         title = request.POST.get('title')
         text = request.POST.get('text')
