@@ -54,9 +54,9 @@ def article_page(request: HttpRequest, link: int) -> HttpResponse:
     return HttpResponse(status=404)
 
 
-def create_article(
-        request: HttpRequest
-) -> Union[HttpResponse, HttpResponseRedirect]:
+def create_article(request: HttpRequest) -> Union[
+    HttpResponse, HttpResponseRedirect
+]:
     """Create an article and append it to the JSON file."""
     if request.method == 'POST':
         title = request.POST.get('title')
