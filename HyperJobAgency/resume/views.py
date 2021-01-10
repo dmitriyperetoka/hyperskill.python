@@ -1,4 +1,4 @@
-from .forms import ResumeCreateForm
+from .forms import ResumeForm
 from .models import Resume
 from vacancy.views import VacancyListView, VacancyCreateView
 
@@ -13,5 +13,5 @@ class ResumeListView(VacancyListView):
 class ResumeCreateView(VacancyCreateView):
     """Create new resumes."""
 
-    form_class = ResumeCreateForm
+    form_class = ResumeForm
     is_for_staff = False

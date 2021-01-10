@@ -1,11 +1,9 @@
 {% extends "base.html" %}
 {% block title %}Menu{% endblock %}
 {% block content %}
-<h2>Welcome to HyperJob!</h2>
-<div><a href="/login">Login</a></div>
-<div><a href="/signup">Signup</a></div>
-<div><a href="/vacancies">Vacancies</a></div>
-<div><a href="/resumes">Resumes</a></div>
-<div><a href="/home">Home</a></div>
-<div><a href="/logout">Logout</a></div>
+<h2>{{ greeting_message }}</h2>
+{% for item in menu %}
+<div><a href="/{{ item }}">{{ item|capfirst }}</a></div>
+{% endfor %}
 {% endblock %}
+{% block return_to_menu %}{% endblock %}

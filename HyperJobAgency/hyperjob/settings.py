@@ -7,7 +7,11 @@ SECRET_KEY = '*57#^8!%%x4wi6byh%qj3!&7b)qu5ve7m5tz9&)2^jievj2j1b'
 
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    '127.0.0.1',
+    'localhost',
+    'testserver',
+]
 
 
 INSTALLED_APPS = [
@@ -19,6 +23,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'resume',
     'vacancy',
+    'users',
 ]
 
 MIDDLEWARE = [

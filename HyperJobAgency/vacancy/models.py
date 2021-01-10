@@ -1,5 +1,7 @@
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from django.db import models
+
+User = get_user_model()
 
 
 class AbstractVacancy(models.Model):
@@ -11,10 +13,16 @@ class AbstractVacancy(models.Model):
     author = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name=foreign_key_related_name
     )
-    description = models.TextField(max_length=1024)
+    description = models.TextField(
+        verbose_name='Description', max_length=1024,
+        help_text='Fill in the description here.'
+    )
 
     class Meta:
         abstract = True
+
+    def __str__(self):
+        return self.description[:25]
 
 
 class Vacancy(AbstractVacancy):
