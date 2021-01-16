@@ -1,7 +1,7 @@
 from typing import Dict, ItemsView, Union, ValuesView
 
 from django.http.request import HttpRequest
-from django.http.response import HttpResponse
+from django.http.response import HttpResponse, HttpResponseNotFound
 from django.template.response import TemplateResponse
 from django.views.generic import TemplateView, View
 
@@ -36,11 +36,16 @@ class GetTicketView(TemplateView):
     template_name = 'get_ticket.html'
 
     def get_context_data(self, service: str) -> Dict[str, Union[int, str]]:
-        return {
-            'service': service,
-            'waiting_time': queue.estimate_waiting_time(service),
-            'ticket_number': queue.issue_ticket(service)
-        }
+        ticket_number, waiting_time = queue.issue_ticket(service)
+        return {'ticket_number': ticket_number, 'waiting_time': waiting_time}
+
+    def get(self, request, **kwargs: Dict[str, str]) -> (
+            Union[HttpResponse, HttpResponseNotFound]
+    ):
+        if kwargs.get('service') in queue.sub_queues.keys():
+            return super().get(request, **kwargs)
+        else:
+            return HttpResponseNotFound()
 
 
 class ProcessingView(TemplateView):

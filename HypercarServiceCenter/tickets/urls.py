@@ -13,4 +13,5 @@ urlpatterns = [
     path('processing', views.ProcessingView.as_view(), name='processing'),
     path('processing/', RedirectView.as_view(url='/processing')),
     path('next/', views.NextView.as_view(), name='next'),
+    path('', RedirectView.as_view(url='/menu/'))
 ]

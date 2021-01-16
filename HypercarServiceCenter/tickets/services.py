@@ -1,4 +1,4 @@
-from typing import Dict
+from typing import Dict, Tuple
 
 
 class Ticket:
@@ -18,15 +18,15 @@ class Ticket:
 class SubQueue:
     """Linked list based queue with Ticket objects as nodes."""
 
+    class PopFromEmptySubQueueError(Exception):
+        """Tried to pop from an empty sub-queue."""
+
     def __init__(self, service: str, minutes_per_ticket: int) -> None:
         self.minutes_per_ticket = minutes_per_ticket
         self.service = service
         self.length = 0
         self.head = None
         self.tail = None
-
-    def __repr__(self) -> str:
-        return self.service
 
     def is_empty(self) -> bool:
         """Check if the sub-queue is empty."""
@@ -48,6 +48,9 @@ class SubQueue:
 
     def pop(self) -> Ticket:
         """Extract next ticket from the sub-queue."""
+        if self.is_empty():
+            raise SubQueue.PopFromEmptySubQueueError
+
         ticket = self.head
         self.length -= 1
 
@@ -63,10 +66,10 @@ class SubQueue:
         return self.minutes_per_ticket * self.length
 
 
-SUB_QUEUES: Dict[str, SubQueue] = {
-    'change_oil': SubQueue('Change oil', 2),
-    'inflate_tires': SubQueue('Inflate tires', 5),
-    'diagnostic': SubQueue('Get diagnostic', 30),
+DEFAULT_SUB_QUEUES_PRESET: Dict[str, Tuple[str, int]] = {
+    'change_oil': ('Change oil', 2),
+    'inflate_tires': ('Inflate tires', 5),
+    'diagnostic': ('Get diagnostic', 30),
 }
 
 
@@ -75,38 +78,49 @@ class PriorityQueue:
     time per ticket.
     """
 
-    def __init__(self, sub_queues: Dict[str, SubQueue] = None) -> None:
-        if sub_queues is None:
-            sub_queues = SUB_QUEUES
-        self.sub_queues = sub_queues
+    def __init__(self, preset: Dict[str, Tuple[str, int]] = None) -> None:
+        if preset is None:
+            preset = DEFAULT_SUB_QUEUES_PRESET
+
+        self.sub_queues = {
+            link: SubQueue(*args) for link, args in preset.items()
+        }
         self.next_ticket_number = None
 
-    def estimate_waiting_time(self, new_ticket_service: str) -> int:
+    def estimate_waiting_time(self, service: str) -> int:
         """Estimate waiting time before issuing a new ticket."""
+        max_minutes_per_ticket = self.sub_queues[service].minutes_per_ticket
         estimated_time = 0
 
-        for service, sub_queue in self.sub_queues.items():
-            estimated_time += sub_queue.estimate_waiting_time()
-
-            if service == new_ticket_service:
-                break
+        for sub_queue in self.sub_queues.values():
+            if sub_queue.minutes_per_ticket <= max_minutes_per_ticket:
+                estimated_time += sub_queue.estimate_waiting_time()
 
         return estimated_time
 
-    def issue_ticket(self, service: str) -> int:
+    def issue_ticket(self, service: str) -> Tuple[int, int]:
         """Add a new ticket to the corresponding sub-queue and return
         the ticket number.
         """
+        estimated_time = self.estimate_waiting_time(service)
         ticket = Ticket()
         self.sub_queues[service].push(ticket)
-        return ticket.number
+        return ticket.number, estimated_time
+
+    def get_next_sub_queue(self) -> SubQueue:
+        """Return the next sub-queue to extract ticket from."""
+        sorted_sub_queues = sorted(
+            self.sub_queues.values(),
+            key=lambda value: value.minutes_per_ticket
+        )
+
+        for sub_queue in sorted_sub_queues:
+            if not sub_queue.is_empty():
+                return sub_queue
 
     def process(self) -> None:
-        """Select the next ticket to provide service to."""
-        for service, sub_queue in sorted(
-                self.sub_queues.items(),
-                key=lambda item: item[1].minutes_per_ticket
-        ):
-            if not sub_queue.is_empty():
-                self.next_ticket_number = sub_queue.pop().number
-                break
+        """Extract the next ticket to provide service to."""
+        next_sub_queue = self.get_next_sub_queue()
+
+        if next_sub_queue:
+            self.next_ticket_number = next_sub_queue.pop().number
