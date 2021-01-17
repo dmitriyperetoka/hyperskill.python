@@ -1,5 +1,7 @@
 from typing import Dict, Tuple
 
+from .exceptions import PopFromEmptySubQueueError
+
 
 class Ticket:
     """Node-like object for linked list in SubQueue."""
@@ -17,9 +19,6 @@ class Ticket:
 
 class SubQueue:
     """Linked list based queue with Ticket objects as nodes."""
-
-    class PopFromEmptySubQueueError(Exception):
-        """Tried to pop from an empty sub-queue."""
 
     def __init__(self, service: str, minutes_per_ticket: int) -> None:
         self.minutes_per_ticket = minutes_per_ticket
@@ -49,7 +48,7 @@ class SubQueue:
     def pop(self) -> Ticket:
         """Extract next ticket from the sub-queue."""
         if self.is_empty():
-            raise SubQueue.PopFromEmptySubQueueError
+            raise PopFromEmptySubQueueError
 
         ticket = self.head
         self.length -= 1
