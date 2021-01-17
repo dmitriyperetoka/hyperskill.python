@@ -2,7 +2,7 @@ import os
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-NEWS_JSON_PATH = 'news.json'
+NEWS_JSON_PATH = os.path.join(BASE_DIR, 'news.json')
 NEWS_JSON_PATH = os.environ.get('NEWS_JSON_PATH') or NEWS_JSON_PATH
 
 SECRET_KEY = '(-q5783z2mh-cd217skey@(+_np2&j0=sl6suvo)ah2uwz@9ij'
@@ -90,3 +90,5 @@ USE_TZ = True
 STATIC_URL = '/static/'
 
 STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
+
+DATETIME_FORMATTING = '%Y-%m-%d %H:%M:%S'

@@ -1,32 +1,19 @@
 import datetime
 import json
 import random
-from typing import Dict, List, Union
+from typing import Union
 
 from django.conf import settings
 from django.http.response import HttpResponse, HttpResponseRedirect
 from django.http.request import HttpRequest
 from django.shortcuts import redirect, render
 
-DATETIME_FORMATTING = '%Y-%m-%d %H:%M:%S'
+from .services import get_articles
 
 
 def index(request: HttpRequest) -> HttpResponseRedirect:  # noqa
     """Redirect to the main page."""
     return redirect('main_page')
-
-
-def get_articles() -> List[Dict[str, Union[str, int]]]:
-    """Return the articles list from JSON file if exists or return
-    empty list.
-    """
-    try:
-        with open(settings.NEWS_JSON_PATH, 'r', encoding='utf-8') as file:
-            articles = json.load(file)
-    except FileNotFoundError:
-        return []
-    else:
-        return articles
 
 
 def main_page(request: HttpRequest) -> HttpResponse:
@@ -38,7 +25,9 @@ def main_page(request: HttpRequest) -> HttpResponse:
 
     if query:
         articles = [
-            q for q in articles if query in q['title'] or query in q['text']
+            article for article in articles
+            if query.lower() in article['title'].lower()
+            or query.lower() in article['text'].lower()
         ]
 
     return render(request, 'main_page.html', {'articles': articles})
@@ -66,16 +55,18 @@ def create_article(request: HttpRequest) -> Union[
             articles = get_articles()
             existing_links = {q['link'] for q in articles}
 
-            link = random.choice(
-                [q for q in range(1000000, 9999999) if q not in existing_links]
-            )
-            created = datetime.datetime.now().strftime(DATETIME_FORMATTING)
+            while True:
+                link = random.randint(1000000, 9999999)
+                if link not in existing_links:
+                    break
+
+            created = datetime.datetime.now().strftime(settings.DATETIME_FORMATTING)
 
             article = {
                 'created': created,
                 'text': text,
                 'title': title,
-                'link': link
+                'link': link,
             }
 
             articles.append(article)
