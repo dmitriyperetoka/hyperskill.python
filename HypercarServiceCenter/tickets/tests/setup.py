@@ -1,4 +1,4 @@
-from django.test import Client, TestCase
+from django.test import TestCase
 
 from ..services import PriorityQueue
 
@@ -7,5 +7,4 @@ class TestSetUp(TestCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        cls.client = Client()
         cls.queue = PriorityQueue()
