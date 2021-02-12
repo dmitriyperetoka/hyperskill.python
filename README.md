@@ -34,5 +34,5 @@ Simulation of a banking system that allows authorization with card number and PI
 #### Algorithms:
 * [Luhn algorithm](https://en.wikipedia.org/wiki/Luhn_algorithm)
 
-### The above projects are implemented by:
+## The above projects are implemented by:
 [Dmitriy Peretoka](https://github.com/dmitriyperetoka)
