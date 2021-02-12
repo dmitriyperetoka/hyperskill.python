@@ -1,4 +1,4 @@
-# hyperskill.python
+# Python study projects of JetBrains Academy
 
 ## [HypercarServiceCenter](https://github.com/dmitriyperetoka/hyperskill.python/tree/main/HypercarServiceCenter)
 Car service center electronic queue managing application. When a customer chooses a service gategory, the system displays estimated waiting time, creates a numbered ticket and places it into the corresponding line of the queue. The priority of the lines is determined by the average waiting time per ticket. Each subsequent ticket is extracted from the highest priority non-empty line on request of an operator.
