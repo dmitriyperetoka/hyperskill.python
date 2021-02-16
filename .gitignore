@@ -125,7 +125,6 @@ dmypy.json
 .pyre/
 
 # Miscellaneous
-static/
 news.json
 *.db
 *.s3db
