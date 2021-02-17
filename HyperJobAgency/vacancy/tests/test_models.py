@@ -1,10 +1,13 @@
+from django.contrib.auth import get_user_model
 from django.test import TestCase
 
-from ..models import User, Vacancy
+from ..models import Vacancy
 from users.tests.setup import STAFF_USER_KWARGS
 
+User = get_user_model()
 
-class VacancyModelsTest(TestCase):
+
+class VacancyModelTest(TestCase):
     model = Vacancy
     model_name_plural = 'vacancies'
     user_kwargs = STAFF_USER_KWARGS
