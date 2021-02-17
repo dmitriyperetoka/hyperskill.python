@@ -1,7 +1,7 @@
-from .setup import TestSetUp
+from django.test import TestCase
 
 
-class TicketsServicesTest(TestSetUp):
+class TicketsServicesTest(TestCase):
     def check_queue_state(self, change_oil, inflate_tires, diagnostic):
         response = self.client.get('/processing')
         sub_queues = response.context.get('sub_queues')
