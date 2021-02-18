@@ -1,9 +1,9 @@
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 
-from .setup import TestClientsSetUp
+from vacancy.tests.setup import TestSetUp
 
 
-class UsersViewsTest(TestClientsSetUp):
+class UsersViewsTest(TestSetUp):
     def test_template_used(self):
         mapping = {'signup': 'signup.html', 'login': 'login.html'}
         client = self.unauthorized_client

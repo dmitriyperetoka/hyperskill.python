@@ -1,7 +1,7 @@
-from users.tests.setup import TestClientsSetUp
+from vacancy.tests.setup import TestSetUp
 
 
-class ResumeURLTest(TestClientsSetUp):
+class ResumeURLTest(TestSetUp):
     def test_exists(self):
         urls = ['/resumes/']
 

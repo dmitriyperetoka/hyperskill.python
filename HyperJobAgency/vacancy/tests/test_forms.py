@@ -1,9 +1,9 @@
 from ..forms import VacancyForm
 from ..models import Vacancy
-from users.tests.setup import TestClientsSetUp
+from .setup import TestSetUp
 
 
-class VacancyFormsTest(TestClientsSetUp):
+class VacancyFormsTest(TestSetUp):
     def test_form_fields(self):
         form_class = VacancyForm
         fields_list = ['description']

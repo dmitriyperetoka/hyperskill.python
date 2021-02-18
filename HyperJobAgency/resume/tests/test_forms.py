@@ -1,9 +1,9 @@
 from ..forms import ResumeForm
 from ..models import Resume
-from users.tests.setup import TestClientsSetUp
+from vacancy.tests.setup import TestSetUp
 
 
-class ResumeFormsTest(TestClientsSetUp):
+class ResumeFormsTest(TestSetUp):
     def test_form_fields(self):
         form_class = ResumeForm
         fields_list = ['description']

@@ -1,10 +1,10 @@
 from ..forms import VacancyForm
 from ..models import Vacancy
+from .setup import TestSetUp
 from resume.forms import ResumeForm
-from users.tests.setup import TestClientsSetUp
 
 
-class VacancyViewsTest(TestClientsSetUp):
+class VacancyViewsTest(TestSetUp):
     def test_template_used(self):
         mapping = {
             'login': 'login.html',

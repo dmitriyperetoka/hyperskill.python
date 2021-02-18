@@ -1,5 +1,5 @@
 from ..models import Resume
-from users.tests.setup import USER_KWARGS
+from vacancy.tests.setup import USER_KWARGS
 from vacancy.tests.test_models import VacancyModelTest
 
 

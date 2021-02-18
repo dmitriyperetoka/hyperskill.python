@@ -1,7 +1,7 @@
-from .setup import TestClientsSetUp
+from vacancy.tests.setup import TestSetUp
 
 
-class UsersURLsTest(TestClientsSetUp):
+class UsersURLsTest(TestSetUp):
     def test_exists(self):
         urls = ['/signup', '/login']
         self.check_exists(urls, self.unauthorized_client)

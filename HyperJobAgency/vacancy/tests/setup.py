@@ -16,7 +16,7 @@ STAFF_USER_KWARGS = {
 }
 
 
-class TestClientsSetUp(TestCase):
+class TestSetUp(TestCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()

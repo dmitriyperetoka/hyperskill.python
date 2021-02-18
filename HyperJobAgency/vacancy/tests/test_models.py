@@ -2,7 +2,7 @@ from django.contrib.auth import get_user_model
 from django.test import TestCase
 
 from ..models import Vacancy
-from users.tests.setup import STAFF_USER_KWARGS
+from .setup import STAFF_USER_KWARGS
 
 User = get_user_model()
 

@@ -1,14 +1,14 @@
 from ..models import Resume
-from users.tests.setup import TestClientsSetUp
+from vacancy.tests.setup import TestSetUp
 
 
-class ResumeViewsTest(TestClientsSetUp):
+class ResumeViewsTest(TestSetUp):
     def test_template_used(self):
         mapping = {'resume_list': 'vacancy_list.html'}
         client = self.unauthorized_client
         self.check_template_used(mapping, client)
 
-    def test_context_object_list_page(self):
+    def test_context_object_list(self):
         client = self.authorized_client
         reverse_name = 'resume_list'
         model = Resume
